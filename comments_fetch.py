@@ -4,6 +4,8 @@
 import requests
 import random
 import re
+import os
+import sys
 import json
 from datetime import datetime
 
@@ -19,14 +21,15 @@ user_agent_list = [
     "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.0)",
     "Mozilla/5.0 (Macintosh; U; PPC Mac OS X 10.5; en-US; rv:1.9.2.15) Gecko/20110303 Firefox/3.6.15",
 ]
-page_re = re.compile(r"<a href=\"/anime/list/.*?/collect\?page=([0-9]+)\" class=\"p\">[0-9]+</a>", re.UNICODE)
+page_re = re.compile(
+    r"<a href=\"/anime/list/.*?/collect\?page=([0-9]+)\" class=\"p\">[0-9]+</a>", re.UNICODE)
 item_re = re.compile(
     r"<li id=\"item_[0-9]+\" class=\".*?\">.*?class=\"l\">(.*?)</a>(.*?<span class=\"starlight stars([0-9]+)\">)?.*?(<div class=\"text\"> (.*?))?</div>.*?</li>",
     re.UNICODE)
 url = r"https://bangumi.tv/anime/list/" + user_id + "/collect"
 date_time = str(datetime.now().date())
 time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-save_path = 'log/comments_' + user_id + '.json'
+save_path = os.path.dirname(sys.argv[0]) + '/log/comments_' + user_id + '.json'
 
 
 def get_item(pair, d):
@@ -59,7 +62,8 @@ def get_item(pair, d):
         d[name]['time'] = time
     if d[name].get('comment', comment) != comment:
         if 'history_comment' in d[name]:
-            d[name]['history_comment'].update({d[name]['time']: d[name]['comment']})
+            d[name]['history_comment'].update(
+                {d[name]['time']: d[name]['comment']})
         else:
             d[name]['history_comment'] = {d[name]['time']: d[name]['comment']}
         if comment == '':
