@@ -23,12 +23,16 @@ user_agent_list = [
 ]
 page_re = re.compile(
     r"<a href=\"/anime/list/.*?/collect\?page=([0-9]+)\" class=\"p\">[0-9]+</a>", re.UNICODE)
+large_page_re = re.compile(r"<span class=\"p_edge\">\(&nbsp;[0-9]+&nbsp;\/\&nbsp;([0-9]+)&nbsp;\)<\/span>", re.UNICODE)
 item_re = re.compile(
     r"<li id=\"item_[0-9]+\" class=\".*?\">.*?class=\"l\">(.*?)</a>(.*?<span class=\"starlight stars([0-9]+)\">)?.*?(<div class=\"text\"> (.*?))?</div>.*?</li>",
     re.UNICODE)
 url = r"https://bangumi.tv/anime/list/" + user_id + "/collect"
 date_time = str(datetime.now().date())
 time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+log_dir = os.path.dirname(sys.argv[0]) + '/log'
+if not os.path.exists(log_dir):
+    os.makedirs(log_dir)
 save_path = os.path.dirname(sys.argv[0]) + '/log/comments_' + user_id + '.json'
 
 
@@ -88,9 +92,16 @@ print('Begin Fetching...')
 r = requests.get(url, headers=headers)
 r.encoding = 'utf-8'
 text = r.text.replace('\n', '').replace('\r', '')
-with open('tmp2.txt', 'w', encoding='utf-8') as tmp_file:
-    tmp_file.write(text)
-page_num = int(page_re.findall(text)[-1])
+# text = r.text
+# with open('tmp2.txt', 'w', encoding='utf-8') as tmp_file:
+#     tmp_file.write(text)
+
+page_indicator = large_page_re.findall(text)
+if page_indicator:
+    page_num = int(page_indicator[0])
+else:
+    page_num = int(page_re.findall(text)[-1])
+print('Total pages: ', page_num)
 print('Page 1 get.')
 
 re_list = item_re.findall(text)
